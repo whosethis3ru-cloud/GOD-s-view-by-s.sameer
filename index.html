@@ -1,192 +1,19 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<link rel="stylesheet" href="style.css">
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta charset="UTF-8">
+
+<meta name="viewport"
+      content="width=device-width,
+      initial-scale=1,
+      maximum-scale=1,
+      viewport-fit=cover">
+
+<meta name="theme-color" content="#07070a">
+
 <title>GOD'S view by sameer</title>
 
-<style>
-*{box-sizing:border-box}
-
-body{
-margin:0;
-background:#07070a;
-color:#f6f4ee;
-font-family:system-ui,-apple-system,Segoe UI,sans-serif
-}
-
-.app{
-width:min(100%,760px);
-margin:auto;
-padding:20px 16px 40px
-}
-
-header{
-text-align:center;
-padding:10px 0 18px
-}
-
-h1{
-font:500 29px Georgia,serif;
-margin:0
-}
-
-.sub{
-color:#aaa;
-font-size:12px;
-margin-top:7px
-}
-
-.panel{
-background:#111118;
-border:1px solid #292934;
-border-radius:20px;
-padding:14px
-}
-
-.stage{
-position:relative;
-width:100%;
-aspect-ratio:4/5;
-overflow:hidden;
-border-radius:15px;
-background:#050508;
-perspective:900px;
-touch-action:none
-}
-
-.layer{
-position:absolute;
-inset:-8%;
-width:116%;
-height:116%;
-object-fit:cover;
-will-change:transform;
-transform-origin:center;
-pointer-events:none
-}
-
-.empty{
-position:absolute;
-inset:0;
-display:grid;
-place-items:center;
-text-align:center;
-padding:30px;
-color:#aaa;
-z-index:999
-}
-
-.hint{
-position:absolute;
-bottom:12px;
-left:50%;
-transform:translateX(-50%);
-background:#000b;
-border:1px solid #ffffff22;
-border-radius:30px;
-padding:8px 12px;
-font-size:11px;
-white-space:nowrap;
-z-index:1000
-}
-
-.uploads{
-display:grid;
-grid-template-columns:repeat(2,1fr);
-gap:8px;
-margin-top:12px
-}
-
-.file,button{
-border:1px solid #292934;
-background:#111118;
-color:#f6f4ee;
-border-radius:13px;
-padding:12px;
-font:inherit;
-font-weight:650
-}
-
-.file{
-display:block;
-text-align:center;
-cursor:pointer
-}
-
-.file input{
-display:none
-}
-
-button{
-width:100%;
-margin-top:9px
-}
-
-.primary{
-background:#e7d3a0;
-color:#17130b;
-border-color:#e7d3a0
-}
-
-.row{
-display:flex;
-align-items:center;
-justify-content:space-between;
-gap:12px;
-margin-top:10px;
-color:#ccc
-}
-
-.row input{
-width:48%
-}
-
-.small{
-font-size:11px;
-color:#999;
-line-height:1.45
-}
-
-.share{
-display:none;
-margin-top:12px
-}
-
-.shareurl{
-font-size:11px;
-word-break:break-all;
-color:#ccc;
-margin:8px 0
-}
-
-.qr{
-display:block;
-background:white;
-margin:auto
-}
-
-.viewer{
-display:none
-}
-
-.tabs{
-display:flex;
-gap:8px;
-margin-bottom:12px
-}
-
-.tabs button{
-margin:0
-}
-
-@media(min-width:620px){
-.uploads{
-grid-template-columns:repeat(5,1fr)
-}
-}
-</style>
+<link rel="stylesheet" href="style.css">
 </head>
 
 <body>
@@ -194,131 +21,57 @@ grid-template-columns:repeat(5,1fr)
 <div class="app">
 
 <header>
-<h1>GOD'S view by sameer</h1>
-<div class="sub">Create • Tilt • Share • Experience</div>
+    <h1>GOD'S view by sameer</h1>
+    <p>Create • Depth • Tilt</p>
 </header>
 
-<div class="tabs">
-<button id="createTab" class="primary">Create</button>
-<button id="viewTab">View shared</button>
-</div>
+
+<section class="panel">
+
+    <div id="stage" class="stage">
+
+        <div id="empty" class="empty">
+            <div>
+                <strong>Upload your images</strong>
+                <br><br>
+                Add 3–5 images as separate layers.
+                <br><br>
+                Background → middle → foreground
+            </div>
+        </div>
+
+        <div id="hint" class="hint">
+            Upload images to begin
+        </div>
+
+    </div>
 
 
-<section id="creator" class="panel">
-
-<div class="stage" id="stage">
-
-<div class="empty" id="empty">
-<div>
-<b>Upload 3–5 images</b>
-<br><br>
-Image 1 = background
-<br>
-Image 5 = closest foreground
-<br><br>
-Then tilt your phone.
-</div>
-</div>
-
-<div class="hint" id="hint">
-Upload images to begin
-</div>
-
-</div>
+    <div id="uploads" class="uploads"></div>
 
 
-<div class="uploads" id="uploads"></div>
+    <button id="motion" class="primary">
+        Enable phone tilt
+    </button>
 
 
-<button class="primary" id="motion">
-Enable phone tilt
-</button>
+    <div id="layerControls"
+         class="layer-controls">
+    </div>
 
 
-<div class="row">
-<span>Depth strength</span>
-<input id="depth" type="range" min="5" max="120" value="55">
-</div>
-
-
-<div class="row">
-<span>Perspective</span>
-<input id="persp" type="range" min="0" max="80" value="30">
-</div>
-
-
-<button id="reset">
-Reset
-</button>
-
-
-<button class="primary" id="publish">
-Create share link + QR
-</button>
-
-
-<div class="share" id="sharebox">
-
-<b>Share your artwork</b>
-
-<canvas
-class="qr"
-id="qr"
-width="180"
-height="180">
-</canvas>
-
-<div
-class="shareurl"
-id="shareurl">
-</div>
-
-<button id="copy">
-Copy link
-</button>
-
-<button id="downloadQr">
-Save QR
-</button>
-
-</div>
-
-
-<p class="small">
-For the strongest effect, use separate PNG layers:
-background → middle → subject → foreground.
-</p>
+    <button id="reset">
+        Reset artwork
+    </button>
 
 </section>
 
 
-<section id="viewer" class="panel viewer">
-
-<div class="stage" id="viewStage">
-
-<div class="hint">
-Enable phone tilt
-</div>
+<footer>
+    GOD'S view by sameer
+</footer>
 
 </div>
-
-<button
-class="primary"
-id="viewMotion">
-
-Enable phone tilt
-
-</button>
-
-<button id="back">
-Create my own
-</button>
-
-</section>
-
-</div>
-
-
 
 
 <script src="app.js"></script>
