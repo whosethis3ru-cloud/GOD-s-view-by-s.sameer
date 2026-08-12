@@ -1,45 +1,133 @@
 /* =========================================================
    GOD'S view by sameer
-   v0.2 — Real Layer System
+   v0.2
+   Independent Layer Parallax Engine
 ========================================================= */
 
-const stage = document.getElementById("stage");
-const uploads = document.getElementById("uploads");
-const empty = document.getElementById("empty");
-const hint = document.getElementById("hint");
+
+/* =========================
+   ELEMENTS
+========================= */
+
+const stage =
+    document.getElementById("stage");
+
+const uploads =
+    document.getElementById("uploads");
+
+const empty =
+    document.getElementById("empty");
+
+const hint =
+    document.getElementById("hint");
+
+const layerControls =
+    document.getElementById("layerControls");
+
+const motionButton =
+    document.getElementById("motion");
+
+const resetButton =
+    document.getElementById("reset");
+
+
+/* =========================
+   APP STATE
+========================= */
 
 let layers = [];
+
 let selectedLayer = null;
 
 let targetX = 0;
 let targetY = 0;
 
-let currentX = 0;
-let currentY = 0;
+let smoothX = 0;
+let smoothY = 0;
 
-let motionStarted = false;
+let motionEnabled = false;
 
 
 /* =========================================================
-   LAYER OBJECT
+   CREATE UPLOAD BUTTONS
 ========================================================= */
 
-function createLayer(file, number) {
+for (let i = 0; i < 5; i++) {
 
-    return {
-        id: Date.now() + Math.random(),
+    const label =
+        document.createElement("label");
 
-        name: "Layer " + number,
+    label.className = "file";
 
-        file: file,
+    label.textContent =
+        "Image " + (i + 1);
 
-        image: null,
 
-        depth: number === 1 ? 5 : number * 25,
+    const input =
+        document.createElement("input");
 
-        movement: number === 1 ? 5 : number * 25,
+    input.type = "file";
 
-        perspective: number === 1 ? 5 : number * 10,
+    input.accept = "image/*";
+
+
+    label.appendChild(input);
+
+
+    input.addEventListener(
+        "change",
+        function () {
+
+            const file =
+                input.files[0];
+
+            if (!file) return;
+
+            addLayer(file);
+        }
+    );
+
+
+    uploads.appendChild(label);
+}
+
+
+/* =========================================================
+   CREATE LAYER
+========================================================= */
+
+function createLayer(file) {
+
+    const layer = {
+
+        id:
+            Date.now() +
+            Math.random(),
+
+        name:
+            "Layer " +
+            (layers.length + 1),
+
+        file:
+            file,
+
+        image:
+            null,
+
+        /*
+           Background starts low.
+           Later layers automatically
+           get more depth.
+        */
+
+        depth:
+            layers.length * 25,
+
+        movement:
+            layers.length * 20 + 10,
+
+        perspective:
+            layers.length * 8 + 5,
 
         x: 0,
 
@@ -51,100 +139,73 @@ function createLayer(file, number) {
 
         visible: true
     };
+
+
+    return layer;
 }
 
 
 /* =========================================================
-   CREATE IMAGE UPLOAD BUTTONS
-========================================================= */
-
-for (let i = 0; i < 5; i++) {
-
-    const label = document.createElement("label");
-
-    label.className = "file";
-
-    label.textContent =
-        "Image " + (i + 1);
-
-    const input =
-        document.createElement("input");
-
-    input.type = "file";
-
-    input.accept = "image/*";
-
-    label.appendChild(input);
-
-    input.addEventListener(
-        "change",
-        function (event) {
-
-            const file =
-                event.target.files[0];
-
-            if (!file) return;
-
-            addLayer(file);
-
-        }
-    );
-
-    uploads.appendChild(label);
-}
-
-
-/* =========================================================
-   ADD NEW LAYER
+   ADD IMAGE
 ========================================================= */
 
 function addLayer(file) {
 
     const layer =
-        createLayer(
-            file,
-            layers.length + 1
-        );
+        createLayer(file);
+
 
     const reader =
         new FileReader();
 
+
     reader.onload =
         function () {
 
-            const img =
+            const image =
                 document.createElement("img");
 
-            img.className = "layer";
 
-            img.src =
+            image.className =
+                "layer";
+
+
+            image.src =
                 reader.result;
 
-            img.style.zIndex =
+
+            image.style.zIndex =
                 layers.length + 1;
 
+
             layer.image =
-                img;
+                image;
+
 
             layers.push(layer);
 
-            stage.appendChild(img);
+
+            stage.appendChild(image);
+
 
             empty.style.display =
                 "none";
 
-            hint.textContent =
-                "Select a layer and tilt your phone";
 
             selectedLayer =
                 layer;
 
-            createLayerPanel();
 
-            updateSelectedLayerUI();
+            rebuildLayerPanel();
+
+
+            hint.textContent =
+                "Select a layer and tilt your phone";
+
 
             render();
         };
+
 
     reader.readAsDataURL(file);
 }
@@ -154,227 +215,225 @@ function addLayer(file) {
    LAYER PANEL
 ========================================================= */
 
-function createLayerPanel() {
+function rebuildLayerPanel() {
 
-    let panel =
-        document.getElementById(
-            "layerControls"
-        );
+    layerControls.innerHTML = "";
 
-    if (!panel) {
-
-        panel =
-            document.createElement("div");
-
-        panel.id =
-            "layerControls";
-
-        panel.className =
-            "layer-controls";
-
-        const controls =
-            document.querySelector(
-                ".controls"
-            );
-
-        controls.before(panel);
-    }
-
-    panel.innerHTML = "";
 
     const title =
         document.createElement("h3");
 
+
     title.textContent =
         "Layers";
 
-    panel.appendChild(title);
+
+    layerControls.appendChild(title);
 
 
-    layers.forEach(
-        function (layer, index) {
+    /*
+       Show layers from front
+       to back.
+    */
 
-            const card =
-                document.createElement("div");
+    [...layers]
+        .reverse()
+        .forEach(
+            function (layer) {
 
-            card.className =
-                "layer-card";
+                const card =
+                    createLayerCard(layer);
 
-
-            if (layer === selectedLayer) {
-
-                card.style.border =
-                    "1px solid #e7d3a0";
+                layerControls.appendChild(card);
             }
-
-
-            const header =
-                document.createElement(
-                    "div"
-                );
-
-            header.className =
-                "layer-title";
-
-
-            const name =
-                document.createElement(
-                    "span"
-                );
-
-            name.textContent =
-                layer.name;
-
-
-            const select =
-                document.createElement(
-                    "button"
-                );
-
-            select.textContent =
-                layer === selectedLayer
-                    ? "Selected ✓"
-                    : "Edit";
-
-
-            select.style.marginTop =
-                "0";
-
-            select.addEventListener(
-                "click",
-                function () {
-
-                    selectedLayer =
-                        layer;
-
-                    createLayerPanel();
-
-                    updateSelectedLayerUI();
-
-                    render();
-                }
-            );
-
-
-            header.appendChild(name);
-
-            header.appendChild(select);
-
-            card.appendChild(header);
-
-
-            /* DEPTH */
-
-            card.appendChild(
-                createSlider(
-                    "Depth",
-                    layer.depth,
-                    0,
-                    100,
-                    function (value) {
-
-                        layer.depth =
-                            value;
-
-                        updateSelectedLayerUI();
-
-                        render();
-                    }
-                )
-            );
-
-
-            /* MOVEMENT */
-
-            card.appendChild(
-                createSlider(
-                    "Movement",
-                    layer.movement,
-                    0,
-                    150,
-                    function (value) {
-
-                        layer.movement =
-                            value;
-
-                        updateSelectedLayerUI();
-
-                        render();
-                    }
-                )
-            );
-
-
-            /* PERSPECTIVE */
-
-            card.appendChild(
-                createSlider(
-                    "Perspective",
-                    layer.perspective,
-                    0,
-                    100,
-                    function (value) {
-
-                        layer.perspective =
-                            value;
-
-                        updateSelectedLayerUI();
-
-                        render();
-                    }
-                )
-            );
-
-
-            /* VISIBILITY */
-
-            const visibility =
-                document.createElement(
-                    "button"
-                );
-
-            visibility.textContent =
-                layer.visible
-                    ? "Hide layer"
-                    : "Show layer";
-
-
-            visibility.addEventListener(
-                "click",
-                function () {
-
-                    layer.visible =
-                        !layer.visible;
-
-                    layer.image.style.display =
-                        layer.visible
-                            ? "block"
-                            : "none";
-
-                    createLayerPanel();
-                }
-            );
-
-
-            card.appendChild(
-                visibility
-            );
-
-
-            panel.appendChild(
-                card
-            );
-        }
-    );
+        );
 }
 
 
 /* =========================================================
-   SLIDER CREATOR
+   CREATE LAYER CARD
+========================================================= */
+
+function createLayerCard(layer) {
+
+    const card =
+        document.createElement("div");
+
+
+    card.className =
+        "layer-card";
+
+
+    if (layer === selectedLayer) {
+
+        card.classList.add(
+            "selected"
+        );
+    }
+
+
+    /* HEADER */
+
+    const header =
+        document.createElement("div");
+
+
+    header.className =
+        "layer-header";
+
+
+    const name =
+        document.createElement("span");
+
+
+    name.className =
+        "layer-name";
+
+
+    name.textContent =
+        layer.name;
+
+
+    const select =
+        document.createElement("button");
+
+
+    select.className =
+        "layer-select";
+
+
+    select.textContent =
+        layer === selectedLayer
+            ? "Selected"
+            : "Edit";
+
+
+    select.addEventListener(
+        "click",
+        function () {
+
+            selectedLayer =
+                layer;
+
+            rebuildLayerPanel();
+
+            render();
+        }
+    );
+
+
+    header.appendChild(name);
+
+    header.appendChild(select);
+
+    card.appendChild(header);
+
+
+    /* DEPTH */
+
+    card.appendChild(
+        createSlider(
+            "Depth",
+            layer.depth,
+            0,
+            100,
+            function (value) {
+
+                layer.depth =
+                    value;
+
+                render();
+            }
+        )
+    );
+
+
+    /* MOVEMENT */
+
+    card.appendChild(
+        createSlider(
+            "Movement",
+            layer.movement,
+            0,
+            150,
+            function (value) {
+
+                layer.movement =
+                    value;
+
+                render();
+            }
+        )
+    );
+
+
+    /* PERSPECTIVE */
+
+    card.appendChild(
+        createSlider(
+            "Perspective",
+            layer.perspective,
+            0,
+            100,
+            function (value) {
+
+                layer.perspective =
+                    value;
+
+                render();
+            }
+        )
+    );
+
+
+    /* VISIBILITY */
+
+    const visibility =
+        document.createElement("button");
+
+
+    visibility.textContent =
+        layer.visible
+            ? "Hide layer"
+            : "Show layer";
+
+
+    visibility.addEventListener(
+        "click",
+        function () {
+
+            layer.visible =
+                !layer.visible;
+
+
+            layer.image.style.display =
+                layer.visible
+                    ? "block"
+                    : "none";
+
+
+            rebuildLayerPanel();
+
+            render();
+        }
+    );
+
+
+    card.appendChild(
+        visibility
+    );
+
+
+    return card;
+}
+
+
+/* =========================================================
+   SLIDER
 ========================================================= */
 
 function createSlider(
-    labelText,
+    name,
     value,
     min,
     max,
@@ -382,27 +441,24 @@ function createSlider(
 ) {
 
     const row =
-        document.createElement(
-            "div"
-        );
+        document.createElement("div");
+
 
     row.className =
         "control-row";
 
 
     const label =
-        document.createElement(
-            "span"
-        );
+        document.createElement("span");
+
 
     label.textContent =
-        labelText;
+        name;
 
 
     const slider =
-        document.createElement(
-            "input"
-        );
+        document.createElement("input");
+
 
     slider.type =
         "range";
@@ -418,12 +474,12 @@ function createSlider(
 
 
     const valueText =
-        document.createElement(
-            "span"
-        );
+        document.createElement("span");
+
 
     valueText.className =
         "value";
+
 
     valueText.textContent =
         value;
@@ -433,15 +489,19 @@ function createSlider(
         "input",
         function () {
 
-            const number =
+            const newValue =
                 Number(
                     slider.value
                 );
 
-            valueText.textContent =
-                number;
 
-            callback(number);
+            valueText.textContent =
+                newValue;
+
+
+            callback(
+                newValue
+            );
         }
     );
 
@@ -452,47 +512,13 @@ function createSlider(
 
     row.appendChild(valueText);
 
+
     return row;
 }
 
 
 /* =========================================================
-   UPDATE UI
-========================================================= */
-
-function updateSelectedLayerUI() {
-
-    if (!selectedLayer) return;
-
-    const cards =
-        document.querySelectorAll(
-            ".layer-card"
-        );
-
-    cards.forEach(
-        function (card, index) {
-
-            const layer =
-                layers[index];
-
-            if (layer === selectedLayer) {
-
-                card.style.border =
-                    "1px solid #e7d3a0";
-            }
-
-            else {
-
-                card.style.border =
-                    "1px solid #292934";
-            }
-        }
-    );
-}
-
-
-/* =========================================================
-   PARALLAX ENGINE
+   PARALLAX RENDER
 ========================================================= */
 
 function render() {
@@ -501,7 +527,6 @@ function render() {
         function (layer) {
 
             if (
-                !layer ||
                 !layer.image ||
                 !layer.visible
             ) {
@@ -509,173 +534,174 @@ function render() {
             }
 
 
+            /*
+               DEPTH
+
+               0 = background
+               100 = foreground
+            */
+
             const depth =
-                Number(layer.depth) / 100;
-
-
-            const movement =
-                Number(layer.movement) / 100;
-
-
-            const perspective =
-                Number(layer.perspective);
+                layer.depth / 100;
 
 
             /*
-              Every layer gets its OWN
-              movement value.
+               MOVEMENT
+
+               Completely independent
+               for each layer.
+            */
+
+            const movement =
+                layer.movement / 100;
+
+
+            /*
+               X movement
             */
 
             const moveX =
-                targetX *
+                smoothX *
                 movement *
                 120;
 
 
-            const moveY =
-                targetY *
-                movement *
-                75;
-
-
             /*
-              Depth controls the
-              simulated camera distance.
+               Y movement
             */
 
-            const z =
-                depth * 60;
+            const moveY =
+                smoothY *
+                movement *
+                70;
 
 
             /*
-              Every layer gets its
-              own perspective.
+               Perspective
             */
 
             const rotateY =
-                targetX *
-                perspective *
+                smoothX *
+                layer.perspective *
                 0.10;
 
 
             const rotateX =
-                -targetY *
-                perspective *
+                -smoothY *
+                layer.perspective *
                 0.06;
 
 
             /*
-              Slight enlargement prevents
-              edges appearing during movement.
+               Slight scale based
+               on depth.
             */
 
             const scale =
-                Number(layer.scale) +
-                1.05 +
+                layer.scale +
+                0.04 +
                 depth * 0.05;
 
 
+            /*
+               Apply to THIS layer only.
+            */
+
             layer.image.style.transform =
-                `
-                translate3d(
-                    ${layer.x + moveX}px,
-                    ${layer.y + moveY}px,
-                    ${z}px
-                )
 
-                rotateY(${rotateY}deg)
+                "translate3d(" +
 
-                rotateX(${rotateX}deg)
+                (layer.x + moveX) +
+                "px," +
 
-                rotateZ(${layer.rotation}deg)
+                (layer.y + moveY) +
+                "px," +
 
-                scale(${scale})
-                `;
+                "0px)" +
+
+                " rotateY(" +
+                rotateY +
+                "deg)" +
+
+                " rotateX(" +
+                rotateX +
+                "deg)" +
+
+                " rotateZ(" +
+                layer.rotation +
+                "deg)" +
+
+                " scale(" +
+                scale +
+                ")";
         }
     );
 }
 
 
 /* =========================================================
-   SMOOTH MOTION
+   SMOOTH ANIMATION
 ========================================================= */
 
-function animation() {
+function animate() {
 
-    currentX +=
-        (targetX - currentX) *
+    smoothX +=
+        (targetX - smoothX) *
         0.10;
 
 
-    currentY +=
-        (targetY - currentY) *
+    smoothY +=
+        (targetY - smoothY) *
         0.10;
-
-
-    /*
-      Use the smoothed values
-      for the final render.
-    */
-
-    const oldX =
-        targetX;
-
-    const oldY =
-        targetY;
-
-
-    targetX =
-        currentX;
-
-    targetY =
-        currentY;
 
 
     render();
 
 
-    targetX =
-        oldX;
-
-    targetY =
-        oldY;
-
-
     requestAnimationFrame(
-        animation
+        animate
     );
 }
 
-animation();
+
+animate();
 
 
 /* =========================================================
-   PHONE GYROSCOPE
+   GYROSCOPE
 ========================================================= */
 
-async function enableTilt(button) {
+async function enableMotion() {
 
     try {
 
         if (
-            !window.DeviceOrientationEvent
+            !("DeviceOrientationEvent"
+                in window)
         ) {
 
             hint.textContent =
-                "Motion sensors are not available.";
+                "This device does not support motion sensors.";
 
             return;
         }
 
 
+        /*
+           Some browsers require
+           explicit permission.
+        */
+
         if (
-            typeof DeviceOrientationEvent
+            typeof
+            DeviceOrientationEvent
                 .requestPermission ===
             "function"
         ) {
 
             const permission =
-                await DeviceOrientationEvent
+                await
+                DeviceOrientationEvent
                     .requestPermission();
 
 
@@ -685,17 +711,19 @@ async function enableTilt(button) {
             ) {
 
                 hint.textContent =
-                    "Motion permission denied.";
+                    "Motion permission was denied.";
 
                 return;
             }
         }
 
 
-        if (motionStarted) return;
+        if (motionEnabled) {
+            return;
+        }
 
 
-        motionStarted =
+        motionEnabled =
             true;
 
 
@@ -705,54 +733,54 @@ async function enableTilt(button) {
 
                 if (
                     event.gamma ===
-                        null ||
-                    event.beta ===
                         null
                 ) {
                     return;
                 }
 
 
-                let x =
-                    event.gamma / 30;
-
-
-                let y =
-                    (event.beta - 45) / 35;
-
-
-                x =
-                    Math.max(
-                        -1,
-                        Math.min(
-                            1,
-                            x
-                        )
-                    );
-
-
-                y =
-                    Math.max(
-                        -1,
-                        Math.min(
-                            1,
-                            y
-                        )
-                    );
-
+                /*
+                   Left / right tilt.
+                */
 
                 targetX =
-                    x;
+                    Math.max(
+                        -1,
+                        Math.min(
+                            1,
+                            event.gamma / 25
+                        )
+                    );
 
-                targetY =
-                    y;
+
+                /*
+                   Forward / backward tilt.
+
+                   45° is treated as
+                   the neutral position.
+                */
+
+                if (
+                    event.beta !== null
+                ) {
+
+                    targetY =
+                        Math.max(
+                            -1,
+                            Math.min(
+                                1,
+                                (event.beta - 45)
+                                / 35
+                            )
+                        );
+                }
 
             },
             true
         );
 
 
-        button.textContent =
+        motionButton.textContent =
             "Tilt enabled ✓";
 
 
@@ -762,7 +790,7 @@ async function enableTilt(button) {
 
     catch (error) {
 
-        console.log(error);
+        console.error(error);
 
         hint.textContent =
             "Motion permission could not be enabled.";
@@ -771,86 +799,56 @@ async function enableTilt(button) {
 
 
 /* =========================================================
-   ENABLE TILT BUTTON
+   MOTION BUTTON
 ========================================================= */
 
-const motionButton =
-    document.getElementById(
-        "motion"
-    );
-
-
-if (motionButton) {
-
-    motionButton.onclick =
-        function () {
-
-            enableTilt(
-                motionButton
-            );
-        };
-}
+motionButton.addEventListener(
+    "click",
+    enableMotion
+);
 
 
 /* =========================================================
    RESET
 ========================================================= */
 
-const resetButton =
-    document.getElementById(
-        "reset"
-    );
+resetButton.addEventListener(
+    "click",
+    function () {
 
+        layers.forEach(
+            function (layer) {
 
-if (resetButton) {
+                if (layer.image) {
 
-    resetButton.onclick =
-        function () {
-
-            layers.forEach(
-                function (layer) {
-
-                    if (
-                        layer &&
-                        layer.image
-                    ) {
-
-                        layer.image.remove();
-                    }
+                    layer.image.remove();
                 }
-            );
-
-
-            layers = [];
-
-            selectedLayer =
-                null;
-
-
-            targetX =
-                0;
-
-            targetY =
-                0;
-
-
-            empty.style.display =
-                "grid";
-
-
-            hint.textContent =
-                "Upload images to begin";
-
-
-            const panel =
-                document.getElementById(
-                    "layerControls"
-                );
-
-
-            if (panel) {
-
-                panel.remove();
             }
-        };
-}
+        );
+
+
+        layers = [];
+
+        selectedLayer =
+            null;
+
+
+        targetX = 0;
+        targetY = 0;
+
+        smoothX = 0;
+        smoothY = 0;
+
+
+        empty.style.display =
+            "grid";
+
+
+        hint.textContent =
+            "Upload images to begin";
+
+
+        layerControls.innerHTML =
+            "";
+    }
+);
