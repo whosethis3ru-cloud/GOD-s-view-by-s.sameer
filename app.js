@@ -200,76 +200,100 @@ function render() {
 
     layers.forEach(function (layer) {
 
-        if (!layer) return;
+        if (!layer || !layer.image) return;
 
-        /*
-        DEPTH controls how far
-        the layer behaves from
-        the camera.
-        */
+        // Convert the individual layer settings
+        // into usable values.
 
         const depth =
-            layer.depth / 100;
-
-
-        /*
-        MOVEMENT is completely
-        independent for every layer.
-        */
+            Number(layer.depth) / 100;
 
         const movement =
-            layer.movement / 100;
+            Number(layer.movement) / 100;
+
+        const perspective =
+            Number(layer.perspective);
 
 
         /*
-        Perspective is also
-        independent.
+        DEPTH
+
+        A layer with depth 0 behaves like
+        the background.
+
+        A layer with depth 1 behaves like
+        the closest foreground layer.
         */
 
-        const perspective =
-            layer.perspective;
+        const depthOffset =
+            depth * 45;
 
 
-        const x =
+        /*
+        MOVEMENT
+
+        Every layer gets its OWN movement value.
+
+        Background:
+        movement = 0.05
+
+        Foreground:
+        movement = 1.00
+        */
+
+        const moveX =
             targetX *
             movement *
-            80;
+            100;
 
-
-        const y =
+        const moveY =
             targetY *
             movement *
-            50;
+            65;
 
+
+        /*
+        PERSPECTIVE
+
+        Each layer can have its own
+        rotation response.
+        */
 
         const rotateY =
             targetX *
             perspective *
-            0.08;
-
+            0.12;
 
         const rotateX =
             -targetY *
             perspective *
-            0.05;
+            0.08;
 
 
         /*
-        Slightly enlarge layers so
-        movement doesn't expose edges.
+        SCALE
+
+        Deeper/closer layers are slightly
+        enlarged so that their edges don't
+        appear when they move.
         */
 
         const scale =
-            1.05 +
-            depth * 0.04;
+            1.06 +
+            depth * 0.08;
 
+
+        /*
+        APPLY EVERYTHING TO THIS
+        PARTICULAR IMAGE.
+        */
 
         layer.image.style.transform =
             `
             translate3d(
-                ${x}px,
-                ${y}px,
-                ${depth * 30}px
+                ${moveX}px,
+                ${moveY}px,
+                ${depthOffset}px
             )
             rotateY(${rotateY}deg)
             rotateX(${rotateX}deg)
@@ -277,7 +301,6 @@ function render() {
             `;
     });
 }
-
 
 /* =========================
    SMOOTH MOTION
