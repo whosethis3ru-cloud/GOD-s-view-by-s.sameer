@@ -1,217 +1,394 @@
 * {
-  box-sizing: border-box;
+    box-sizing: border-box;
+}
+
+html,
+body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    min-height: 100%;
 }
 
 body {
-  margin: 0;
-  background: #07070a;
-  color: #f6f4ee;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: #07070a;
+    color: #f6f4ee;
+    font-family:
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
 }
+
 
 .app {
-  width: min(100%, 760px);
-  margin: auto;
-  padding: 20px 16px 40px;
+    width: min(100%, 760px);
+    margin: auto;
+    padding:
+        20px
+        16px
+        40px;
 }
+
 
 header {
-  text-align: center;
-  padding: 10px 0 18px;
+    text-align: center;
+    padding-bottom: 18px;
 }
+
 
 h1 {
-  font-family: Georgia, serif;
-  font-weight: 500;
-  letter-spacing: .01em;
-  font-size: 29px;
-  margin: 0;
+    margin: 0;
+
+    font-family:
+        Georgia,
+        serif;
+
+    font-size: 29px;
+    font-weight: 500;
 }
 
-.sub {
-  color: #aaa;
-  font-size: 12px;
-  margin-top: 7px;
+
+header p {
+    margin: 7px 0 0;
+
+    color: #a7a4ae;
+
+    font-size: 12px;
 }
 
-.tabs {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 12px;
-}
-
-.tabs button {
-  flex: 1;
-}
-
-button,
-.file {
-  border: 1px solid #292934;
-  background: #111118;
-  color: #f6f4ee;
-  border-radius: 13px;
-  padding: 12px;
-  font: inherit;
-  font-weight: 650;
-}
-
-button {
-  width: 100%;
-  margin-top: 9px;
-}
-
-button.active,
-.primary {
-  background: #e7d3a0;
-  color: #17130b;
-  border-color: #e7d3a0;
-}
 
 .panel {
-  background: #111118;
-  border: 1px solid #292934;
-  border-radius: 20px;
-  padding: 14px;
+    background: #111118;
+
+    border:
+        1px solid
+        #292934;
+
+    border-radius: 20px;
+
+    padding: 14px;
 }
+
+
+/* =========================
+   ARTWORK STAGE
+========================= */
 
 .stage {
-  position: relative;
-  width: 100%;
-  aspect-ratio: 4 / 5;
-  overflow: hidden;
-  border-radius: 15px;
-  background: #050508;
-  perspective: 900px;
-  touch-action: none;
+    position: relative;
+
+    width: 100%;
+
+    aspect-ratio: 4 / 5;
+
+    overflow: hidden;
+
+    background: #030305;
+
+    border-radius: 15px;
+
+    perspective: 1000px;
+
+    touch-action: none;
 }
+
+
+/* =========================
+   IMAGE LAYERS
+========================= */
 
 .layer {
-  position: absolute;
-  inset: -8%;
-  width: 116%;
-  height: 116%;
-  object-fit: cover;
-  will-change: transform;
-  transform-origin: center;
-  pointer-events: none;
+    position: absolute;
+
+    left: 0;
+    top: 0;
+
+    width: 100%;
+    height: 100%;
+
+    /*
+       Contain prevents unwanted
+       zoom/cropping.
+    */
+
+    object-fit: contain;
+
+    transform-origin: center center;
+
+    will-change: transform;
+
+    pointer-events: none;
+
+    user-select: none;
 }
+
+
+/* =========================
+   EMPTY SCREEN
+========================= */
 
 .empty {
-  position: absolute;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  text-align: center;
-  padding: 30px;
-  color: #aaa;
-  z-index: 999;
+    position: absolute;
+
+    inset: 0;
+
+    display: grid;
+
+    place-items: center;
+
+    text-align: center;
+
+    padding: 30px;
+
+    color: #aaa;
+
+    z-index: 999;
 }
+
+
+/* =========================
+   HINT
+========================= */
 
 .hint {
-  position: absolute;
-  left: 50%;
-  bottom: 12px;
-  transform: translateX(-50%);
-  white-space: nowrap;
-  background: #000b;
-  border: 1px solid #ffffff22;
-  border-radius: 30px;
-  padding: 8px 12px;
-  font-size: 11px;
-  z-index: 1000;
+    position: absolute;
+
+    left: 50%;
+    bottom: 12px;
+
+    transform:
+        translateX(-50%);
+
+    white-space: nowrap;
+
+    background: #000b;
+
+    border:
+        1px solid
+        #ffffff22;
+
+    border-radius: 30px;
+
+    padding:
+        8px
+        12px;
+
+    font-size: 11px;
+
+    z-index: 1000;
 }
+
+
+/* =========================
+   UPLOAD BUTTONS
+========================= */
 
 .uploads {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 8px;
-  margin-top: 12px;
+    display: grid;
+
+    grid-template-columns:
+        repeat(2, 1fr);
+
+    gap: 8px;
+
+    margin-top: 12px;
 }
+
 
 .file {
-  display: block;
-  text-align: center;
-  cursor: pointer;
+    display: block;
+
+    text-align: center;
+
+    border:
+        1px solid
+        #292934;
+
+    background: #111118;
+
+    color: #f6f4ee;
+
+    border-radius: 13px;
+
+    padding: 12px;
+
+    font-size: 12px;
+
+    cursor: pointer;
 }
+
 
 .file input {
-  display: none;
+    display: none;
 }
 
-.controls {
-  margin-top: 12px;
+
+/* =========================
+   BUTTONS
+========================= */
+
+button {
+    width: 100%;
+
+    margin-top: 9px;
+
+    padding: 12px;
+
+    border:
+        1px solid
+        #292934;
+
+    border-radius: 13px;
+
+    background: #111118;
+
+    color: #f6f4ee;
+
+    font: inherit;
+
+    font-weight: 650;
 }
+
+
+button.primary {
+    background: #e7d3a0;
+
+    color: #17130b;
+
+    border-color: #e7d3a0;
+}
+
+
+/* =========================
+   LAYERS
+========================= */
 
 .layer-controls {
-  margin-top: 14px;
+    margin-top: 16px;
 }
+
+
+.layer-controls h3 {
+    margin:
+        0
+        0
+        10px;
+
+    font-size: 15px;
+}
+
 
 .layer-card {
-  background: #0b0b10;
-  border: 1px solid #292934;
-  border-radius: 15px;
-  padding: 12px;
-  margin-top: 9px;
+    background: #0b0b10;
+
+    border:
+        1px solid
+        #292934;
+
+    border-radius: 15px;
+
+    padding: 12px;
+
+    margin-top: 9px;
 }
 
-.layer-title {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 13px;
-  font-weight: 700;
-  margin-bottom: 8px;
+
+.layer-card.selected {
+    border-color: #e7d3a0;
 }
+
+
+.layer-header {
+    display: flex;
+
+    justify-content:
+        space-between;
+
+    align-items: center;
+
+    gap: 8px;
+
+    margin-bottom: 8px;
+}
+
+
+.layer-name {
+    font-size: 13px;
+
+    font-weight: 700;
+}
+
+
+.layer-select {
+    width: auto;
+
+    margin: 0;
+
+    padding:
+        7px
+        10px;
+
+    font-size: 11px;
+}
+
+
+/* =========================
+   SLIDERS
+========================= */
 
 .control-row {
-  display: grid;
-  grid-template-columns: 90px 1fr 35px;
-  gap: 8px;
-  align-items: center;
-  margin-top: 8px;
-  font-size: 11px;
-  color: #aaa;
+    display: grid;
+
+    grid-template-columns:
+        90px
+        1fr
+        38px;
+
+    align-items: center;
+
+    gap: 8px;
+
+    margin-top: 10px;
+
+    font-size: 11px;
+
+    color: #aaa;
 }
+
 
 .control-row input {
-  width: 100%;
+    width: 100%;
 }
+
 
 .value {
-  text-align: right;
-  color: #e7d3a0;
+    text-align: right;
+
+    color: #e7d3a0;
 }
 
-.small {
-  font-size: 11px;
-  color: #999;
-  line-height: 1.45;
+
+/* =========================
+   FOOTER
+========================= */
+
+footer {
+    text-align: center;
+
+    color: #66636d;
+
+    font-size: 11px;
+
+    margin-top: 14px;
 }
 
-.share {
-  display: none;
-  margin-top: 12px;
-}
-
-.shareurl {
-  font-size: 11px;
-  word-break: break-all;
-  color: #ccc;
-  margin: 8px 0;
-}
-
-.qr {
-  display: block;
-  background: white;
-  margin: auto;
-}
-
-.viewer {
-  display: none;
-}
 
 @media (min-width: 620px) {
-  .uploads {
-    grid-template-columns: repeat(5, 1fr);
-  }
+
+    .uploads {
+        grid-template-columns:
+            repeat(5, 1fr);
+    }
 }
