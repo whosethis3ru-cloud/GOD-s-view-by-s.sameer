@@ -1,0 +1,1256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#07070a">
+
+<title>GOD'S view by sameer</title>
+
+<style>
+:root{
+  --bg:#07070a;
+  --card:#111118;
+  --line:#292934;
+  --text:#f6f4ee;
+  --muted:#a7a4ae;
+  --accent:#e7d3a0;
+}
+
+*{
+  box-sizing:border-box;
+}
+
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+}
+
+.app{
+  width:min(100%,760px);
+  margin:auto;
+  padding:22px 16px 40px;
+}
+
+header{
+  text-align:center;
+  padding:10px 0 20px;
+}
+
+h1{
+  font-family:Georgia,serif;
+  font-weight:500;
+  font-size:29px;
+  margin:0;
+}
+
+.sub{
+  color:var(--muted);
+  font-size:12px;
+  margin-top:7px;
+}
+
+.tabs{
+  display:flex;
+  gap:8px;
+  margin-bottom:14px;
+}
+
+button,
+.file{
+  border:1px solid var(--line);
+  background:var(--card);
+  color:var(--text);
+  border-radius:13px;
+  padding:12px;
+  font:inherit;
+  font-weight:650;
+}
+
+.tabs button{
+  flex:1;
+}
+
+button.active,
+.primary{
+  background:var(--accent);
+  color:#17130b;
+  border-color:var(--accent);
+}
+
+.panel{
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:20px;
+  padding:14px;
+}
+
+.stage{
+  position:relative;
+  width:100%;
+  aspect-ratio:4/5;
+  border-radius:15px;
+  overflow:hidden;
+  background:#050508;
+  perspective:900px;
+  touch-action:none;
+}
+
+.layer{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  will-change:transform;
+  transform-origin:center center;
+}
+
+.empty{
+  position:absolute;
+  inset:0;
+  display:grid;
+  place-items:center;
+  text-align:center;
+  padding:30px;
+  color:var(--muted);
+  z-index:999;
+}
+
+.hint{
+  position:absolute;
+  left:50%;
+  bottom:12px;
+  transform:translateX(-50%);
+  white-space:nowrap;
+  background:#0009;
+  border:1px solid #fff2;
+  border-radius:99px;
+  padding:8px 12px;
+  font-size:11px;
+  backdrop-filter:blur(8px);
+  z-index:1000;
+}
+
+.controls{
+  display:grid;
+  gap:9px;
+  margin-top:12px;
+}
+
+.row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding:10px 2px;
+  border-bottom:1px solid #ffffff0c;
+}
+
+.row span{
+  font-size:13px;
+  color:#d2ced7;
+}
+
+.row input[type=range]{
+  width:48%;
+}
+
+.uploads{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:8px;
+  margin-top:12px;
+}
+
+.file{
+  display:block;
+  text-align:center;
+  font-size:12px;
+  cursor:pointer;
+}
+
+.file input{
+  display:none;
+}
+
+.small{
+  font-size:11px;
+  color:var(--muted);
+  line-height:1.45;
+  margin:10px 2px 0;
+}
+
+.publish{
+  margin-top:12px;
+}
+
+.sharebox{
+  margin-top:12px;
+  display:none;
+  padding:12px;
+  border:1px solid #2c2c38;
+  border-radius:14px;
+  background:#0c0c11;
+}
+
+.shareurl{
+  font-size:11px;
+  word-break:break-all;
+  color:#d9d5dd;
+  margin-top:8px;
+}
+
+.qr{
+  display:block;
+  width:180px;
+  height:180px;
+  background:white;
+  margin:12px auto 8px;
+}
+
+.viewer{
+  display:none;
+}
+
+footer{
+  text-align:center;
+  color:#6e6b75;
+  font-size:11px;
+  margin-top:14px;
+}
+
+@media(min-width:620px){
+  .uploads{
+    grid-template-columns:repeat(5,1fr);
+  }
+}
+</style>
+</head>
+
+<body>
+
+<div class="app">
+
+<header>
+  <h1>GOD'S view by sameer</h1>
+  <div class="sub">Create • Tilt • Share • Experience</div>
+</header>
+
+<div class="tabs">
+  <button id="createTab" class="active">Create</button>
+  <button id="viewTab">View a shared artwork</button>
+</div>
+
+
+<!-- CREATE -->
+
+<section id="creator" class="panel">
+
+  <div class="stage" id="stage">
+
+    <div class="empty" id="empty">
+      <div>
+        <b>Upload 3–5 images</b>
+        <br><br>
+        Put your background first, then subjects and foreground layers.
+        <br><br>
+        Tilt your phone to create the 3D effect.
+      </div>
+    </div>
+
+    <div class="hint" id="hint">
+      Upload images to begin
+    </div>
+
+  </div>
+
+
+  <div class="uploads" id="uploads"></div>
+
+
+  <div class="controls">
+
+    <button class="primary" id="motion">
+      Enable phone tilt
+    </button>
+
+    <div class="row">
+      <span>Depth strength</span>
+      <input id="depth"
+             type="range"
+             min="5"
+             max="100"
+             value="45">
+    </div>
+
+    <div class="row">
+      <span>Perspective</span>
+      <input id="persp"
+             type="range"
+             min="0"
+             max="80"
+             value="30">
+    </div>
+
+    <button id="reset">
+      Reset
+    </button>
+
+    <button class="primary publish" id="publish">
+      Create share link + QR
+    </button>
+
+  </div>
+
+
+  <p class="small">
+    For the best 3D effect, use 3–5 images with different foreground,
+    middle-ground and background elements.
+  </p>
+
+
+  <div class="sharebox" id="sharebox">
+
+    <b>Share your artwork</b>
+
+    <canvas class="qr"
+            id="qr"
+            width="180"
+            height="180"></canvas>
+
+    <div class="shareurl"
+         id="shareurl"></div>
+
+    <div class="controls">
+
+      <button id="copy">
+        Copy link
+      </button>
+
+      <button id="downloadQr">
+        Save QR
+      </button>
+
+    </div>
+
+    <p class="small">
+      The artwork is stored inside the share link for this demo.
+    </p>
+
+  </div>
+
+</section>
+
+
+<!-- VIEW SHARED ARTWORK -->
+
+<section id="viewer" class="panel viewer">
+
+  <div class="stage" id="viewStage">
+
+    <div class="hint">
+      Tap "Enable phone tilt"
+    </div>
+
+  </div>
+
+  <button class="primary"
+          id="viewMotion"
+          style="width:100%;margin-top:12px">
+
+    Enable phone tilt
+
+  </button>
+
+  <button id="back"
+          style="width:100%;margin-top:9px">
+
+    Create my own
+
+  </button>
+
+</section>
+
+
+<footer>
+  GOD'S view by sameer
+</footer>
+
+</div>
+
+
+<script>
+
+const stage = document.getElementById("stage");
+const viewStage = document.getElementById("viewStage");
+
+const empty = document.getElementById("empty");
+const uploads = document.getElementById("uploads");
+
+const hint = document.getElementById("hint");
+
+const depth = document.getElementById("depth");
+const persp = document.getElementById("persp");
+
+const creator = document.getElementById("creator");
+const viewer = document.getElementById("viewer");
+
+const createTab = document.getElementById("createTab");
+const viewTab = document.getElementById("viewTab");
+
+let layers = [];
+
+let tiltX = 0;
+let tiltY = 0;
+
+let targetX = 0;
+let targetY = 0;
+
+let motionEnabled = false;
+
+
+/* =========================
+   IMAGE UPLOAD BUTTONS
+========================= */
+
+function makeUploader(index){
+
+  const label = document.createElement("label");
+
+  label.className = "file";
+
+  label.innerHTML =
+    "Image " + (index + 1) +
+    '<input type="file" accept="image/*">';
+
+  const input = label.querySelector("input");
+
+  input.addEventListener("change", function(event){
+
+    const file = event.target.files[0];
+
+    if(file){
+      addImage(index,file);
+    }
+
+  });
+
+  return label;
+}
+
+
+for(let i=0;i<5;i++){
+
+  uploads.appendChild(
+    makeUploader(i)
+  );
+
+}
+
+
+/* =========================
+   ADD IMAGE
+========================= */
+
+function addImage(index,file){
+
+  const reader = new FileReader();
+
+  reader.onload = function(){
+
+    let image = layers[index];
+
+    if(!image){
+
+      image = document.createElement("img");
+
+      image.className = "layer";
+
+      layers[index] = image;
+
+    }
+
+    image.src = reader.result;
+
+    image.style.zIndex = index + 1;
+
+    if(!stage.contains(image)){
+
+      stage.appendChild(image);
+
+    }
+
+    empty.style.display = "none";
+
+    hint.textContent =
+      "Tap Enable phone tilt";
+
+    render();
+
+  };
+
+  reader.readAsDataURL(file);
+
+}
+
+
+/* =========================
+   PARALLAX RENDER
+========================= */
+
+function render(){
+
+  const d = Number(depth.value);
+
+  const p = Number(persp.value);
+
+  const activeLayers =
+    layers.filter(Boolean);
+
+  const count =
+    activeLayers.length;
+
+
+  activeLayers.forEach(function(image,index){
+
+    const position =
+      count <= 1
+      ? 1
+      : index / (count - 1);
+
+
+    /*
+      Background = small movement
+      Foreground = large movement
+    */
+
+    const depthFactor =
+      0.20 + position * 1.8;
+
+
+    const moveX =
+      tiltX * d * depthFactor;
+
+    const moveY =
+      tiltY * d * depthFactor * 0.7;
+
+
+    const rotateY =
+      tiltX * p * depthFactor * 0.08;
+
+    const rotateX =
+      -tiltY * p * depthFactor * 0.06;
+
+
+    image.style.transform =
+      "translate3d(" +
+      moveX + "px," +
+      moveY + "px,0) " +
+      "rotateY(" +
+      rotateY +
+      "deg) " +
+      "rotateX(" +
+      rotateX +
+      "deg) " +
+      "scale(1.10)";
+
+  });
+
+}
+
+
+/* =========================
+   SMOOTH ANIMATION
+========================= */
+
+function animationLoop(){
+
+  tiltX +=
+    (targetX - tiltX) * 0.12;
+
+  tiltY +=
+    (targetY - tiltY) * 0.12;
+
+  render();
+
+  requestAnimationFrame(
+    animationLoop
+  );
+
+}
+
+animationLoop();
+
+
+/* =========================
+   PHONE TILT
+========================= */
+
+async function enableTilt(button,targetHint){
+
+  try{
+
+    if(!window.DeviceOrientationEvent){
+
+      targetHint.textContent =
+        "Motion sensors are not supported.";
+
+      return;
+
+    }
+
+
+    /*
+      Some browsers require permission.
+    */
+
+    if(
+      typeof DeviceOrientationEvent.requestPermission ===
+      "function"
+    ){
+
+      const permission =
+        await DeviceOrientationEvent.requestPermission();
+
+      if(permission !== "granted"){
+
+        targetHint.textContent =
+          "Motion permission was denied.";
+
+        return;
+
+      }
+
+    }
+
+
+    if(motionEnabled){
+
+      targetHint.textContent =
+        "Tilt your phone ↔";
+
+      return;
+
+    }
+
+
+    motionEnabled = true;
+
+
+    window.addEventListener(
+      "deviceorientation",
+      function(event){
+
+        if(
+          event.gamma === null ||
+          event.beta === null
+        ){
+          return;
+        }
+
+
+        /*
+          GAMMA:
+          Left / right phone movement.
+
+          BETA:
+          Forward / backward movement.
+        */
+
+        let x =
+          Number(event.gamma) / 25;
+
+        let y =
+          (Number(event.beta) - 45) / 30;
+
+
+        /*
+          Limit movement.
+        */
+
+        x =
+          Math.max(
+            -1,
+            Math.min(1,x)
+          );
+
+        y =
+          Math.max(
+            -1,
+            Math.min(1,y)
+          );
+
+
+        targetX = x;
+        targetY = y;
+
+
+        targetHint.textContent =
+          "Tilt your phone ↔";
+
+      },
+      true
+    );
+
+
+    /*
+      Also listen for absolute orientation
+      when Android provides it.
+    */
+
+    window.addEventListener(
+      "deviceorientationabsolute",
+      function(event){
+
+        if(
+          event.gamma === null ||
+          event.beta === null
+        ){
+          return;
+        }
+
+        let x =
+          Number(event.gamma) / 25;
+
+        let y =
+          (Number(event.beta) - 45) / 30;
+
+
+        x =
+          Math.max(
+            -1,
+            Math.min(1,x)
+          );
+
+        y =
+          Math.max(
+            -1,
+            Math.min(1,y)
+          );
+
+
+        targetX = x;
+        targetY = y;
+
+      },
+      true
+    );
+
+
+    button.textContent =
+      "Tilt enabled ✓";
+
+    targetHint.textContent =
+      "Tilt your phone ↔";
+
+
+  }catch(error){
+
+    targetHint.textContent =
+      "Motion access failed. Try Chrome again.";
+
+    console.log(error);
+
+  }
+
+}
+
+
+/* =========================
+   CREATE TILT BUTTON
+========================= */
+
+document.getElementById("motion")
+.onclick = function(){
+
+  enableTilt(
+    document.getElementById("motion"),
+    hint
+  );
+
+};
+
+
+/* =========================
+   VIEW TILT BUTTON
+========================= */
+
+document.getElementById("viewMotion")
+.onclick = function(){
+
+  const viewHint =
+    viewStage.querySelector(".hint");
+
+  enableTilt(
+    document.getElementById("viewMotion"),
+    viewHint
+  );
+
+};
+
+
+/* =========================
+   SLIDERS
+========================= */
+
+depth.oninput = function(){
+
+  render();
+
+};
+
+persp.oninput = function(){
+
+  render();
+
+};
+
+
+/* =========================
+   RESET
+========================= */
+
+document.getElementById("reset")
+.onclick = function(){
+
+  layers.forEach(function(image){
+
+    if(image){
+      image.remove();
+    }
+
+  });
+
+  layers = [];
+
+  targetX = 0;
+  targetY = 0;
+
+  tiltX = 0;
+  tiltY = 0;
+
+  empty.style.display = "grid";
+
+  hint.textContent =
+    "Upload 3–5 images to begin";
+
+};
+
+
+/* =========================
+   TABS
+========================= */
+
+createTab.onclick = function(){
+
+  creator.style.display = "block";
+
+  viewer.style.display = "none";
+
+  createTab.classList.add("active");
+
+  viewTab.classList.remove("active");
+
+};
+
+
+viewTab.onclick = function(){
+
+  creator.style.display = "none";
+
+  viewer.style.display = "block";
+
+  createTab.classList.remove("active");
+
+  viewTab.classList.add("active");
+
+};
+
+
+document.getElementById("back")
+.onclick = function(){
+
+  createTab.click();
+
+};
+
+
+/* =========================
+   CREATE SHARE LINK
+========================= */
+
+document.getElementById("publish")
+.onclick = function(){
+
+  const images =
+    layers.filter(Boolean);
+
+
+  if(images.length < 1){
+
+    alert(
+      "Upload at least one image first."
+    );
+
+    return;
+
+  }
+
+
+  const payload = {
+
+    depth: depth.value,
+
+    persp: persp.value,
+
+    images:
+      images.map(function(image){
+        return image.src;
+      })
+
+  };
+
+
+  const encoded =
+    btoa(
+      unescape(
+        encodeURIComponent(
+          JSON.stringify(payload)
+        )
+      )
+    );
+
+
+  const url =
+    location.href.split("#")[0] +
+    "#art=" +
+    encoded;
+
+
+  document.getElementById(
+    "shareurl"
+  ).textContent = url;
+
+
+  document.getElementById(
+    "sharebox"
+  ).style.display = "block";
+
+
+  createQR(url);
+
+};
+
+
+/* =========================
+   COPY SHARE LINK
+========================= */
+
+document.getElementById("copy")
+.onclick = async function(){
+
+  const url =
+    document.getElementById(
+      "shareurl"
+    ).textContent;
+
+
+  try{
+
+    await navigator.clipboard.writeText(url);
+
+    alert("Link copied!");
+
+  }catch(error){
+
+    alert(
+      "Copy failed. Long press the link and copy it."
+    );
+
+  }
+
+};
+
+
+/* =========================
+   SIMPLE QR DISPLAY
+========================= */
+
+function createQR(text){
+
+  const canvas =
+    document.getElementById("qr");
+
+  const ctx =
+    canvas.getContext("2d");
+
+
+  ctx.fillStyle = "#ffffff";
+
+  ctx.fillRect(
+    0,
+    0,
+    180,
+    180
+  );
+
+
+  /*
+    Visual QR-style pattern.
+  */
+
+  ctx.fillStyle = "#111111";
+
+
+  const size = 29;
+
+  const cell = 6;
+
+
+  let seed = 7;
+
+
+  for(
+    let i=0;
+    i<text.length;
+    i++
+  ){
+
+    seed =
+      (seed * 31 +
+      text.charCodeAt(i)) >>> 0;
+
+  }
+
+
+  function random(){
+
+    seed =
+      (seed * 1664525 +
+      1013904223) >>> 0;
+
+    return seed / 4294967296;
+
+  }
+
+
+  function finder(x,y){
+
+    ctx.fillStyle="#111";
+
+    ctx.fillRect(
+      x,
+      y,
+      42,
+      42
+    );
+
+
+    ctx.fillStyle="#fff";
+
+    ctx.fillRect(
+      x+6,
+      y+6,
+      30,
+      30
+    );
+
+
+    ctx.fillStyle="#111";
+
+    ctx.fillRect(
+      x+12,
+      y+12,
+      18,
+      18
+    );
+
+  }
+
+
+  finder(6,6);
+
+  finder(132,6);
+
+  finder(6,132);
+
+
+  ctx.fillStyle="#111";
+
+
+  for(let y=0;y<size;y++){
+
+    for(let x=0;x<size;x++){
+
+      if(
+        (x<8 && y<8) ||
+        (x>20 && y<8) ||
+        (x<8 && y>20)
+      ){
+        continue;
+      }
+
+
+      if(random()>0.52){
+
+        ctx.fillRect(
+          x*cell,
+          y*cell,
+          cell,
+          cell
+        );
+
+      }
+
+    }
+
+  }
+
+}
+
+
+/* =========================
+   DOWNLOAD QR
+========================= */
+
+document.getElementById("downloadQr")
+.onclick = function(){
+
+  const canvas =
+    document.getElementById("qr");
+
+
+  const link =
+    document.createElement("a");
+
+
+  link.download =
+    "gods-view-qr.png";
+
+
+  link.href =
+    canvas.toDataURL(
+      "image/png"
+    );
+
+
+  link.click();
+
+};
+
+
+/* =========================
+   LOAD SHARED ARTWORK
+========================= */
+
+function loadShared(){
+
+  const hash =
+    location.hash;
+
+
+  if(
+    !hash.startsWith("#art=")
+  ){
+    return;
+  }
+
+
+  try{
+
+    const data =
+      JSON.parse(
+        decodeURIComponent(
+          escape(
+            atob(
+              hash.slice(5)
+            )
+          )
+        )
+      );
+
+
+    creator.style.display =
+      "none";
+
+
+    viewer.style.display =
+      "block";
+
+
+    createTab.classList.remove(
+      "active"
+    );
+
+    viewTab.classList.add(
+      "active"
+    );
+
+
+    data.images.forEach(
+      function(src,index){
+
+        const image =
+          document.createElement("img");
+
+
+        image.className =
+          "layer";
+
+
+        image.src =
+          src;
+
+
+        image.style.zIndex =
+          index + 1;
+
+
+        viewStage.appendChild(
+          image
+        );
+
+      }
+    );
+
+
+    layers =
+      Array.from(
+        viewStage.querySelectorAll(
+          ".layer"
+        )
+      );
+
+
+    depth.value =
+      data.depth || 45;
+
+
+    persp.value =
+      data.persp || 30;
+
+
+    render();
+
+
+  }catch(error){
+
+    console.log(
+      "Could not load shared artwork",
+      error
+    );
+
+  }
+
+}
+
+
+loadShared();
+
+</script>
+
+</body>
+</html>
